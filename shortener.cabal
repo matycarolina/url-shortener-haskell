@@ -19,6 +19,8 @@ library
     , scotty >= 0.12
     , text
     , http-types
+    , regex
+    , regex-tdfa
 
 executable shortener
   import: common
