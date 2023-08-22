@@ -21,6 +21,7 @@ library
     , http-types
     , regex
     , regex-tdfa
+    , regex-pcre-builtin
 
 executable shortener
   import: common

@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 module Shortener where
 
@@ -14,12 +13,14 @@ import Network.HTTP.Types (status404)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
-import Text.RE.Replace
-import Text.RE.TDFA.String
+import Text.Regex.PCRE
 import Web.Scotty
 
-onlyLetters :: String -> String
-onlyLetters s = replaceAll "" $ s *=~ [re|$([^a-zA-Z])|]
+-- onlyLetters :: String -> String
+-- onlyLetters s = replaceAll "" $ s *=~ [re|$([^a-zA-Z])|]
+
+isValid :: String -> Bool
+isValid url = url =~ ("^(https?):\\/\\/[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)$" :: String)
 
 shortener :: IO ()
 shortener = do
@@ -42,10 +43,13 @@ shortener = do
                     H.td (H.text url)
     post "/" $ do
       url <- param "url"
-      liftIO $
-        modifyIORef urlsR $
-          \(i, urls) ->
-            (i + 1, M.insert i (pack (onlyLetters (unpack url))) urls)
+      ( if isValid (unpack url)
+          then liftIO $
+            modifyIORef urlsR $
+              \(i, urls) ->
+                (i + 1, M.insert i url urls)
+          else raiseStatus status404 "not valid"
+        )
       redirect "/"
     get "/:n" $ do
       n <- param "n"
