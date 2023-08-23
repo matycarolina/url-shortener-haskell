@@ -7,9 +7,9 @@ import Data.Foldable (for_)
 import Data.IORef (modifyIORef, newIORef, readIORef)
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Text (Text, pack, unpack)
+import Data.Text (Text, unpack)
 import qualified Data.Text.Lazy as LT
-import Network.HTTP.Types (status404)
+import Network.HTTP.Types (status404, status400)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -48,7 +48,7 @@ shortener = do
             modifyIORef urlsR $
               \(i, urls) ->
                 (i + 1, M.insert i url urls)
-          else raiseStatus status404 "not valid"
+          else raiseStatus status400 "URL not valid"
         )
       redirect "/"
     get "/:n" $ do
@@ -58,4 +58,4 @@ shortener = do
         Just url ->
           redirect (LT.fromStrict url)
         Nothing ->
-          raiseStatus status404 "not found"
+          raiseStatus status404 "not valid"
